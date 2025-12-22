@@ -106,6 +106,7 @@ dagctl config generate
 This converts your `config.yaml` to `config.py` with automatic state connection:
 
 **Before (config.yaml):**
+
 ```yaml
 gateways:
   snowflake:
@@ -117,6 +118,7 @@ gateways:
 ```
 
 **After (config.py):**
+
 ```python
 from dagctl import get_state_connection
 from sqlmesh.core.config import Config
@@ -233,12 +235,14 @@ from dagctl import get_state_connection
 ```
 
 **Features:**
+
 - ✅ Auto-refreshes JWT tokens when expired
 - ✅ Uses current org/project from `~/.dagctl/config.yaml`
 - ✅ Thread-safe and cached
 - ✅ Works with SQLMesh's config system
 
 **Parameters:**
+
 - `gateway` (optional): Gateway name (uses current project if not specified)
 - `insecure` (optional): Skip SSL verification for development
 
@@ -277,7 +281,7 @@ token = get_fresh_token()
 
 dagctl stores configuration in `~/.dagctl/`:
 
-```
+```tree
 ~/.dagctl/
 ├── config.yaml      # Current org/project context
 ├── auth.json        # Auth tokens (0600 permissions)
@@ -298,7 +302,7 @@ For development with self-signed certificates:
 
 ```bash
 # Login with SSL verification disabled
-dagctl auth login --org acme --api-url https://api.dagctl.internal -k
+dagctl auth login --org acme -k
 
 # Set project with SSL verification disabled  
 dagctl use-project my-project -k
@@ -332,6 +336,7 @@ dagctl auth login --org your-org
 ### "State backend connection failed"
 
 Check that:
+
 1. You're authenticated: `dagctl auth status`
 2. Project is set: `dagctl config current`
 3. pg-proxy is running and accessible
@@ -343,5 +348,4 @@ Apache-2.0
 ## Support
 
 - Documentation: https://docs.dagctl.io
-- Issues: https://github.com/dagctl/dagctl/issues
-- Email: support@dagctl.io
+- Email: support@scalecraft.dev

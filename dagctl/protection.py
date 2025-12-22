@@ -1,9 +1,33 @@
 """Environment protection checks for dagctl CLI."""
 
+import sys
 import requests
 from typing import Optional
 
 from .dagctl_config import DagctlConfig
+
+
+def _parse_target_environment_from_argv() -> Optional[str]:
+    """Parse the target environment from sys.argv for SQLMesh commands.
+    
+    Examples:
+        sqlmesh plan dev → "dev"
+        sqlmesh run prod → "prod"
+        sqlmesh plan → None (will use default)
+    """
+    argv = sys.argv
+    
+    # Find commands that take environment as positional argument
+    env_commands = ["plan", "run", "diff", "invalidate"]
+    
+    for i, arg in enumerate(argv):
+        if arg in env_commands:
+            # Check if next argument exists and isn't a flag
+            if i + 1 < len(argv) and not argv[i + 1].startswith("-"):
+                return argv[i + 1]
+            break
+    
+    return None
 
 
 def check_environment_protection(

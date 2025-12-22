@@ -189,11 +189,11 @@ class DagctlConfig:
     # Auth0 config
     def get_auth0_domain(self) -> str:
         """Get Auth0 domain."""
-        return self._config.get("auth0_domain", "dev-5gjswt61ohlm4zln.us.auth0.com")
+        return self._config.get("auth0_domain", "dagctl-us-1.us.auth0.com")
 
     def get_auth0_client_id(self) -> str:
         """Get Auth0 client ID."""
-        return self._config.get("auth0_client_id", "RL1FizgZNQDlJ8oluFQlMVd608IAR9Cu")
+        return self._config.get("auth0_client_id", "JxXl18ostdRfEpnLkgcv2i2DfcdjOChI")
 
     # PostgreSQL Proxy config
     def get_pg_proxy_host(self) -> str:

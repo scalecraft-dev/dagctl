@@ -2,12 +2,9 @@
 requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
-# Note: Custom build process defined in setup.py
-# This will compile Python source to bytecode and remove .py files
-
 [project]
 name = "dagctl"
-version = "0.1.2"
+version = "0.1.5"
 description = "CLI tool for managing SQLMesh projects with dagctl-hosted state databases"
 readme = "README.md"
 requires-python = ">=3.9"

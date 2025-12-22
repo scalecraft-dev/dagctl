@@ -57,8 +57,17 @@ def get_state_connection(gateway: Optional[str] = None, insecure: bool = False) 
     # Check environment protection (will raise RuntimeError if not allowed)
     project_id = config.get_current_project_id()
     if project_id:
-        from .protection import check_environment_protection
-        check_environment_protection(project_id=project_id, insecure=insecure)
+        from .protection import check_environment_protection, _parse_target_environment_from_argv
+        
+        # Parse the target environment from command line
+        target_env = _parse_target_environment_from_argv()
+        
+        # Check protection for the specific target environment
+        check_environment_protection(
+            environment=target_env, 
+            project_id=project_id, 
+            insecure=insecure
+        )
     
     # Get fresh token (will auto-refresh if expired)
     access_token = get_fresh_token(config, insecure)
