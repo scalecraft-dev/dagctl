@@ -1,0 +1,80 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+# Note: Custom build process defined in setup.py
+# This will compile Python source to bytecode and remove .py files
+
+[project]
+name = "dagctl"
+version = "0.1.2"
+description = "CLI tool for managing SQLMesh projects with dagctl-hosted state databases"
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "Apache-2.0"}
+authors = [
+    {name = "Scalecraft", email = "support@scalecraft.dev"}
+]
+keywords = ["sqlmesh", "data", "analytics", "sql", "dagctl", "state-management"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: Apache Software License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Database",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+
+dependencies = [
+    "click>=8.1.0",
+    "requests>=2.31.0",
+    "rich>=13.0.0",
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://dagctl.io"
+Documentation = "https://docs.dagctl.io"
+Repository = "https://github.com/scalecraft-dev/dagctl"
+Issues = "https://github.com/scalecraft-dev/dagctl/issues"
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.4.0",
+    "pytest-cov>=4.1.0",
+    "black>=23.0.0",
+    "ruff>=0.0.280",
+    "mypy>=1.4.0",
+]
+
+[project.scripts]
+dagctl = "dagctl.cli:main"
+
+[tool.setuptools]
+packages = ["dagctl"]
+
+[tool.setuptools.package-data]
+dagctl = ["resources/*.yaml"]
+
+[tool.black]
+line-length = 100
+target-version = ['py39', 'py310', 'py311']
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "W", "I", "N", "UP"]
+ignore = []
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
