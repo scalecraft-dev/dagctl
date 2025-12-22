@@ -32,6 +32,7 @@ def _parse_target_environment_from_argv() -> Optional[str]:
 
 def check_environment_protection(
     environment: Optional[str] = None,
+    default_environment: Optional[str] = None,
     project_id: Optional[str] = None,
     insecure: bool = False,
 ) -> None:
@@ -42,7 +43,9 @@ def check_environment_protection(
     
     Args:
         environment: Environment name (e.g., "prod"). If not provided, 
-                     fetches from current project's sqlmesh_environment.
+                     will attempt to parse from command line args or use default_environment.
+        default_environment: Default environment to use if not specified on command line.
+                     This should match your SQLMesh config's default_target_environment.
         project_id: Project ID. If not provided, uses current project from config.
         insecure: Skip SSL verification.
     
@@ -91,6 +94,14 @@ def check_environment_protection(
     
     if not org_id:
         raise RuntimeError("No organization ID found. Please re-authenticate.")
+    
+    # If environment not explicitly provided, try to parse from command line
+    if not environment:
+        environment = _parse_target_environment_from_argv()
+    
+    # If still no environment, use the default_environment
+    if not environment and default_environment:
+        environment = default_environment
     
     # Build request params
     params = {"project_id": project_id}

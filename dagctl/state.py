@@ -7,7 +7,11 @@ from typing import Any, Dict, Optional
 from .dagctl_config import DagctlConfig
 
 
-def get_state_connection(gateway: Optional[str] = None, insecure: bool = False) -> Dict[str, Any]:
+def get_state_connection(
+    gateway: Optional[str] = None, 
+    default_environment: Optional[str] = None,
+    insecure: bool = False
+) -> Dict[str, Any]:
     """Get state connection configuration for SQLMesh.
     
     This function fetches fresh credentials from dagctl, automatically refreshing
@@ -16,6 +20,8 @@ def get_state_connection(gateway: Optional[str] = None, insecure: bool = False) 
     
     Args:
         gateway: Gateway name (optional, uses current project if not specified)
+        default_environment: Default environment to use if not specified on command line.
+                     This should match your SQLMesh config's default_target_environment.
         insecure: Skip SSL verification (for dev environments)
     
     Returns:
@@ -29,12 +35,17 @@ def get_state_connection(gateway: Optional[str] = None, insecure: bool = False) 
         # In your SQLMesh config.py
         from dagctl import get_state_connection
         
+        DEFAULT_ENVIRONMENT = f'dev_{getpass.getuser()}'
+        
         gateways = {
             "snowflake": {
                 "connection": {
                     # Your Snowflake config...
                 },
-                "state_connection": get_state_connection("snowflake"),
+                "state_connection": get_state_connection(
+                    gateway="snowflake",
+                    default_environment=DEFAULT_ENVIRONMENT
+                ),
             }
         }
         ```
@@ -57,14 +68,11 @@ def get_state_connection(gateway: Optional[str] = None, insecure: bool = False) 
     # Check environment protection (will raise RuntimeError if not allowed)
     project_id = config.get_current_project_id()
     if project_id:
-        from .protection import check_environment_protection, _parse_target_environment_from_argv
+        from .protection import check_environment_protection
         
-        # Parse the target environment from command line
-        target_env = _parse_target_environment_from_argv()
-        
-        # Check protection for the specific target environment
+        # Check protection (will auto-parse from command line and fall back to default)
         check_environment_protection(
-            environment=target_env, 
+            default_environment=default_environment,
             project_id=project_id, 
             insecure=insecure
         )
