@@ -254,10 +254,14 @@ def auth_login(org: str, api_url: Optional[str], insecure: bool) -> None:
         auth0_id = claims.get("sub")
         user_email = claims.get("email", "unknown")
         
-        # Get user's organization via onboarding status endpoint (no org header needed)
+        # Get user's organization via onboarding status endpoint. No org header
+        # is needed here, but the endpoint is token-authenticated: send the ID
+        # token as a bearer (the API validates ID tokens). Without it the request
+        # is rejected with HTTP 401 before onboarding status can be checked.
         status_response = requests.get(
             f"{api}/api/v1/onboarding/status",
             params={"auth0_id": auth0_id},
+            headers={"Authorization": f"Bearer {id_token}"},
             verify=verify_ssl
         )
         

@@ -250,16 +250,16 @@ class TestAuth0Config:
     """Test Auth0 configuration."""
 
     def test_get_auth0_domain(self, temp_dagctl_home: Path):
-        """Test getting Auth0 domain."""
+        """Test getting Auth0 domain (prod default)."""
         config = DagctlConfig()
         domain = config.get_auth0_domain()
-        assert domain == "dev-5gjswt61ohlm4zln.us.auth0.com"
+        assert domain == "dagctl-us-1.us.auth0.com"
 
     def test_get_auth0_client_id(self, temp_dagctl_home: Path):
-        """Test getting Auth0 client ID."""
+        """Test getting Auth0 client ID (prod default)."""
         config = DagctlConfig()
         client_id = config.get_auth0_client_id()
-        assert client_id == "RL1FizgZNQDlJ8oluFQlMVd608IAR9Cu"
+        assert client_id == "JxXl18ostdRfEpnLkgcv2i2DfcdjOChI"
 
 
 class TestPGProxyConfig:

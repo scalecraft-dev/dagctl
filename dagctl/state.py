@@ -1,10 +1,37 @@
 """State connection management for SQLMesh integration."""
 
+import os
 import requests
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
 from .dagctl_config import DagctlConfig
+
+# Postgres sslmode used for the state connection. Defaults to "require" so the
+# JWT password is never sent in cleartext to the public pg-proxy. Overridable
+# (env DAGCTL_STATE_SSLMODE, or `pg_proxy_sslmode` in ~/.dagctl/config.yaml) so
+# the client can target an environment whose proxy doesn't terminate TLS yet.
+DEFAULT_STATE_SSLMODE = "require"
+_VALID_SSLMODES = {
+    "disable",
+    "allow",
+    "prefer",
+    "require",
+    "verify-ca",
+    "verify-full",
+}
+
+
+def _resolve_sslmode(config: DagctlConfig) -> str:
+    """Resolve the state-connection sslmode: env var, then config, then default."""
+    sslmode = os.environ.get("DAGCTL_STATE_SSLMODE") or config.get_pg_proxy_sslmode()
+    sslmode = sslmode.strip().lower()
+    if sslmode not in _VALID_SSLMODES:
+        raise RuntimeError(
+            f"Invalid sslmode '{sslmode}'. Must be one of: "
+            f"{', '.join(sorted(_VALID_SSLMODES))}."
+        )
+    return sslmode
 
 
 def get_state_connection(
@@ -83,7 +110,9 @@ def get_state_connection(
     # Compute credentials locally (no API call needed)
     credentials = _compute_state_credentials(config, project, access_token)
     
-    # Return connection dict for SQLMesh
+    # Return connection dict for SQLMesh. sslmode defaults to "require" so the
+    # JWT password is never sent in cleartext to the public pg-proxy; it is
+    # overridable for environments whose proxy doesn't terminate TLS yet.
     return {
         "type": "postgres",
         "host": credentials["host"],
@@ -91,6 +120,7 @@ def get_state_connection(
         "database": credentials["database"],
         "user": credentials["user"],
         "password": credentials["password"],
+        "sslmode": _resolve_sslmode(config),
     }
 
 
@@ -235,11 +265,16 @@ def _compute_state_credentials(
     def sanitize(name: str) -> str:
         return name.lower().replace("-", "_").replace(" ", "_")
     
-    # Build connection details
+    # Build connection details.
+    # The proxy username is lowercased to match how management-api resolves the
+    # org namespace and project secret (both lowercased). Sending the raw,
+    # display-cased org name here (e.g. "Scalecraft") would not match and the
+    # proxy would fail credential lookup. Hyphens are preserved because the
+    # project secret name keeps them.
     return {
         "host": pg_proxy_host,
         "port": pg_proxy_port,
         "database": f"org_{sanitize(org_name)}_{sanitize(project)}",
-        "user": f"{org_name}/{project}",
+        "user": f"{org_name.lower()}/{project.lower()}",
         "password": access_token,  # JWT token is the password
     }

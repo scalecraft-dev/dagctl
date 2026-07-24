@@ -30,7 +30,9 @@ class TestComputeStateCredentials:
         assert creds["host"] == "pg-proxy.dagctl.io"
         assert creds["port"] == 5432
         assert creds["database"] == "org_testorg_my_project"
-        assert creds["user"] == "TestOrg/my-project"
+        # Username is lowercased to stay consistent with the lowercased org
+        # namespace and project secret that management-api resolves against.
+        assert creds["user"] == "testorg/my-project"
         assert creds["password"] == "jwt_token_xyz"
 
     def test_compute_credentials_sanitizes_names(self, temp_dagctl_home: Path):
@@ -244,8 +246,56 @@ class TestGetStateConnection:
         assert conn["host"] == "pg-proxy.dagctl.io"
         assert conn["port"] == 5432
         assert conn["database"] == "org_testorg_test_project"
-        assert conn["user"] == "TestOrg/test-project"
+        # Username is lowercased to match management-api's org/project lookups.
+        assert conn["user"] == "testorg/test-project"
         assert conn["password"] == sample_auth_tokens["access_token"]
+        # sslmode defaults to require so the JWT is never sent in cleartext.
+        assert conn["sslmode"] == "require"
+        # verify-full is unimplementable against the pinned SQLMesh config
+        # (extra="forbid", no sslrootcert field); ensure we never emit it.
+        assert "sslrootcert" not in conn
+
+    def test_get_state_connection_sslmode_config_override(
+        self, temp_dagctl_home: Path, sample_auth_tokens: Dict[str, Any]
+    ):
+        """sslmode can be overridden via config for a non-TLS proxy."""
+        config = DagctlConfig()
+        config.save_auth_tokens(sample_auth_tokens)
+        config.set_current_org("test-org", "TestOrg")
+        config.set_current_project("test-project")
+        config.set_pg_proxy_sslmode("disable")
+
+        conn = get_state_connection(gateway="snowflake", insecure=False)
+
+        assert conn["sslmode"] == "disable"
+
+    def test_get_state_connection_sslmode_env_override(
+        self, temp_dagctl_home: Path, sample_auth_tokens: Dict[str, Any], monkeypatch
+    ):
+        """DAGCTL_STATE_SSLMODE takes precedence over config."""
+        config = DagctlConfig()
+        config.save_auth_tokens(sample_auth_tokens)
+        config.set_current_org("test-org", "TestOrg")
+        config.set_current_project("test-project")
+        config.set_pg_proxy_sslmode("disable")
+        monkeypatch.setenv("DAGCTL_STATE_SSLMODE", "prefer")
+
+        conn = get_state_connection(gateway="snowflake", insecure=False)
+
+        assert conn["sslmode"] == "prefer"
+
+    def test_get_state_connection_sslmode_invalid(
+        self, temp_dagctl_home: Path, sample_auth_tokens: Dict[str, Any], monkeypatch
+    ):
+        """An invalid sslmode raises a clear error rather than reaching libpq."""
+        config = DagctlConfig()
+        config.save_auth_tokens(sample_auth_tokens)
+        config.set_current_org("test-org", "TestOrg")
+        config.set_current_project("test-project")
+        monkeypatch.setenv("DAGCTL_STATE_SSLMODE", "bogus")
+
+        with pytest.raises(RuntimeError, match="Invalid sslmode"):
+            get_state_connection(gateway="snowflake", insecure=False)
 
     def test_get_state_connection_not_authenticated(self, temp_dagctl_home: Path):
         """Test error when not authenticated."""

@@ -223,6 +223,15 @@ class DagctlConfig:
         """Get PostgreSQL proxy port."""
         return self._config.get("pg_proxy_port", 5432)
 
+    def get_pg_proxy_sslmode(self) -> str:
+        """Get the sslmode for the state connection (defaults to 'require')."""
+        return self._config.get("pg_proxy_sslmode", "require")
+
+    def set_pg_proxy_sslmode(self, sslmode: str) -> None:
+        """Set the sslmode for the state connection."""
+        self._config["pg_proxy_sslmode"] = sslmode
+        self._save_config()
+
     # Summary
     def get_context_summary(self) -> Dict[str, Any]:
         """Get summary of current context."""
