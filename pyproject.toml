@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dagctl"
-version = "0.2.0"
-description = "CLI tool for managing SQLMesh projects with dagctl-hosted state databases"
+version = "0.3.0"
+description = "Command-line client for dagctl, the hosted SQLMesh service. Sign in, choose a project, and run SQLMesh against managed state."
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "Apache-2.0"}
