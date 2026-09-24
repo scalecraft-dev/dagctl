@@ -1,14 +1,24 @@
 # dagctl
 
-CLI tool for managing SQLMesh projects with dagctl-hosted state databases.
+The command-line client for [dagctl](https://dagctl.io), a hosted service that runs SQLMesh projects in production. dagctl keeps your project's SQLMesh state, runs your models on a schedule, holds every change for approval before it goes live, and tells you when something breaks. One flat rate covers the whole team.
 
-## Features
+This package is the part that lives on your machine. It signs you in to your dagctl organization and hands SQLMesh a connection to your project's hosted state, so `sqlmesh plan` and `sqlmesh run` on a laptop see the same state as production. There is nothing to run locally and no database credentials to manage.
 
-- 🔐 **Secure Authentication** - OAuth-based authentication with JWT tokens
-- 🔄 **Auto-Refresh** - JWT tokens automatically refresh when expired
-- 🚀 **Zero Config** - SQLMesh state connection configured automatically
-- 🏢 **Multi-Org** - Support for multiple organizations and projects
-- 🔒 **Secure** - No long-lived credentials, JWT-based database authentication
+- Product: <https://dagctl.io>
+- Documentation: <https://docs.dagctl.io>
+- Support: <support@scalecraft.dev>
+
+## What it does
+
+- Signs you in to a dagctl organization from the browser and keeps the session fresh.
+- Sets which project you are working in.
+- Gives SQLMesh the state connection for that project through `get_state_connection()`, so your `config.py` carries no credentials.
+- Converts an existing `config.yaml` into a `config.py` wired to dagctl.
+
+## Requirements
+
+- Python 3.9 or newer
+- A dagctl organization. If you do not have one, request access at <https://dagctl.io>.
 
 ## Installation
 
@@ -16,86 +26,74 @@ CLI tool for managing SQLMesh projects with dagctl-hosted state databases.
 pip install dagctl
 ```
 
-## Quick Start
+## Quick start
 
 ```bash
-# 1. Authenticate
+# 1. Sign in to your organization
 dagctl auth login --org your-org
 
-# 2. Set project context
+# 2. Choose the project you are working in
 dagctl use-project my-project
 
-# 3. Run SQLMesh
+# 3. Point SQLMesh at dagctl (converts config.yaml to config.py)
 cd my-sqlmesh-project
+dagctl config generate
+
+# 4. Use SQLMesh as usual
 sqlmesh plan
 ```
 
-## How It Works
+## How it works
 
-dagctl provides a Python function `get_state_connection()` that SQLMesh calls to get state database credentials. This function:
+SQLMesh keeps track of what has run and what changed in a state database. dagctl hosts that database for your project. When SQLMesh starts, it calls `get_state_connection()` from this package, which:
 
-1. Reads your authentication from `~/.dagctl/`
-2. Automatically refreshes JWT tokens if expired
-3. Returns PostgreSQL connection details for the dagctl-hosted state database
-4. Uses JWT tokens for passwordless authentication via pg-proxy
+1. Reads your sign-in from `~/.dagctl/`
+2. Refreshes the session if it has expired
+3. Returns the connection details SQLMesh expects
+
+The connection uses a short-lived token in place of a password, so nothing long-lived is stored on your machine.
 
 ## Usage
 
-### 1. Authentication
-
-Authenticate to your dagctl organization via browser:
+### 1. Sign in
 
 ```bash
 dagctl auth login --org acme
 
 # Output:
 # dagctl Authentication
-# 
+#
 #   Opening browser for authentication...
 #   Listening on http://localhost:8080
-# 
+#
 #   Waiting for authentication... ✓
 #   Exchanging code for tokens... ✓
 #   Verifying organization membership... ✓
 #   Fetching environment configuration... ✓
-# 
+#
 # ✓ Authenticated as user@company.com
-# ✓ Organization: acme (ID: 4710a6f2-dbcf-4966-9427-b91784327d2d)
-# 
+# ✓ Organization: acme
+#
 # Next step: dagctl use-project <project-name>
 ```
 
-For development environments with self-signed certificates:
-
-```bash
-dagctl auth login --org acme --api-url https://api.dagctl.internal -k
-```
-
-### 2. Set Project Context
-
-Tell dagctl which project you're working on:
+### 2. Choose a project
 
 ```bash
 dagctl use-project my-project
 
 # Output:
 # Setting project context: my-project
-# 
+#
 #   Verifying project exists... ✓
-# 
+#
 # ✓ Project set: my-project
-# 
+#
 # Next step:
 #   dagctl config generate
 ```
 
-For development:
-
-```bash
-dagctl use-project snowflake -k
-```
-
-### 3. Generate SQLMesh Config
+### 3. Generate the SQLMesh config
 
 If you have a `config.yaml`, generate a Python config:
 
@@ -103,7 +101,7 @@ If you have a `config.yaml`, generate a Python config:
 dagctl config generate
 ```
 
-This converts your `config.yaml` to `config.py` with automatic state connection:
+This converts your `config.yaml` to `config.py` with the state connection filled in:
 
 **Before (config.yaml):**
 
@@ -131,7 +129,7 @@ gateways = {
             "user": os.environ.get("SNOWFLAKE_USER"),
             # ...
         },
-        "state_connection": get_state_connection(),  # ← Auto-configured!
+        "state_connection": get_state_connection(),  # ← Filled in by dagctl
     },
 }
 
@@ -143,7 +141,7 @@ config = Config(
 
 ### 4. Use SQLMesh
 
-Just run SQLMesh normally! The state connection is handled automatically:
+Run SQLMesh normally. The state connection is handled for you:
 
 ```bash
 sqlmesh plan
@@ -226,7 +224,7 @@ from dagctl import get_state_connection
 # Returns:
 # {
 #     "type": "postgres",
-#     "host": "pg-proxy.dev-us-1.dagctl.internal",
+#     "host": "<your dagctl state endpoint>",
 #     "port": 5432,
 #     "database": "org_acme_myproject",
 #     "user": "acme/myproject",
@@ -261,7 +259,7 @@ token = get_fresh_token()
 
 1. **Login Flow:**
    - `dagctl auth login` opens browser for OAuth
-   - You authenticate with Auth0
+   - You authenticate with your identity provider
    - dagctl receives JWT tokens (access_token, refresh_token, id_token)
    - Tokens stored in `~/.dagctl/auth.json` (0600 permissions)
 
@@ -271,11 +269,11 @@ token = get_fresh_token()
    - If expired, automatically refreshes using refresh_token
    - Returns connection with JWT as password
 
-3. **pg-proxy Authentication:**
-   - Client connects to pg-proxy with JWT as password
-   - pg-proxy validates JWT using Auth0 JWKS
-   - If valid, pg-proxy fetches org credentials from management API
-   - pg-proxy connects to CoreDB and proxies traffic
+3. **Database Proxy Authentication:**
+   - Client connects to the dagctl database proxy with the JWT as the password
+   - The dagctl database proxy validates the JWT
+   - If valid, the proxy resolves your organization's credentials
+   - The proxy connects to the state database and proxies traffic
 
 ## Configuration Directory
 
@@ -339,7 +337,7 @@ Check that:
 
 1. You're authenticated: `dagctl auth status`
 2. Project is set: `dagctl config current`
-3. pg-proxy is running and accessible
+3. Your network allows outbound connections to dagctl
 
 ## License
 
