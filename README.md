@@ -55,10 +55,10 @@ The connection uses a short-lived token in place of a password, so nothing long-
 
 ## Documentation
 
-- [Usage](docs/usage.md): signing in, choosing a project, generating the SQLMesh config, the command reference, the files in `~/.dagctl/`, and troubleshooting.
-- [API reference](docs/api-reference.md): `get_state_connection()`, `get_fresh_token()`, and how authentication to the hosted state database works.
+- [Usage](https://github.com/scalecraft-dev/dagctl/blob/main/docs/usage.md): signing in, choosing a project, generating the SQLMesh config, the command reference, the files in `~/.dagctl/`, and troubleshooting.
+- [API reference](https://github.com/scalecraft-dev/dagctl/blob/main/docs/api-reference.md): `get_state_connection()`, `get_fresh_token()`, and how authentication to the hosted state database works.
 - [docs.dagctl.io](https://docs.dagctl.io): the dagctl platform documentation.
 
 ## License
 
-[Apache-2.0](LICENSE)
+[Apache-2.0](https://github.com/scalecraft-dev/dagctl/blob/main/LICENSE)
