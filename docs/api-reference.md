@@ -69,6 +69,6 @@ token = get_fresh_token()
 
 - **JWT-Based Auth**: No passwords stored, only JWT tokens
 - **Auto-Refresh**: Tokens automatically refresh when expired
-- **Short-Lived**: Access tokens expire after 1 hour
+- **Short-Lived**: Access tokens expire on the schedule set by the identity provider; the client refreshes them a few minutes before expiry
 - **Secure Storage**: All files in `~/.dagctl/` have 0600 permissions
 - **No Shared Secrets**: Each user authenticates individually

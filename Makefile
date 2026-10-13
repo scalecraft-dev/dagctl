@@ -1,4 +1,4 @@
-.PHONY: help clean build build-bytecode test-build upload-test install-test test lint
+.PHONY: help clean build verify test-build upload-test upload-prod install-test install-dev test lint format release-test version
 
 help: ## Show this help message
 	@echo "Available commands:"
@@ -15,34 +15,13 @@ clean: ## Clean build artifacts
 	find . -type f -name "*.pyc" -delete
 	@echo "✓ Cleaned"
 
-build: clean ## Build bytecode-only wheel
-	@echo "================================================"
-	@echo "Building dagctl with bytecode-only distribution"
-	@echo "================================================"
-	@echo ""
-	@echo "Building wheel with bytecode compilation..."
-	python setup.py bdist_wheel
-	@echo "  ✓ Built wheel"
-	@echo ""
+build: clean ## Build sdist and wheel
+	python -m build
+	@echo "  ✓ Built $$(ls dist)"
 
-build-bytecode: build ## Alias for build
-	@echo "Build complete!"
-
-verify: ## Verify wheel contains only bytecode (no source files)
-	@echo "Verifying source files removed..."
+verify: ## Check the built distributions and their PyPI metadata
 	@if [ ! -d "dist" ]; then echo "  ✗ No dist/ directory found. Run 'make build' first."; exit 1; fi
-	@echo ""
-	@echo "Wheel contents:"
-	@echo "---------------"
-	@unzip -l dist/*.whl | grep -E "dagctl/.*\\.pyc$$" || echo "  No .pyc files found"
-	@echo ""
-	@if unzip -l dist/*.whl | grep -E "dagctl/.*\\.py$$" | grep -v "__pycache__"; then \
-		echo "  ⚠️  WARNING: .py source files found in wheel!"; \
-		exit 1; \
-	else \
-		echo "  ✓ No source files found (only bytecode)"; \
-	fi
-	@echo ""
+	twine check dist/*
 
 test-build: build verify ## Build and verify for test PyPI
 	@echo "Build verified and ready for test PyPI upload"

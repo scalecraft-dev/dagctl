@@ -4,15 +4,15 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dagctl"
-version = "0.3.0"
-description = "Command-line client for dagctl, the hosted SQLMesh service. Sign in, choose a project, and run SQLMesh against managed state."
+version = "0.4.0"
+description = "CLI for dagctl, the hosted platform for running SQLMesh and dbt in production, with role-based access, approvals, Slack alerts, and a semantic layer over MCP. Connects local sqlmesh plan and run to your project's managed state."
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "Apache-2.0"}
 authors = [
     {name = "Scalecraft", email = "support@scalecraft.dev"}
 ]
-keywords = ["sqlmesh", "data", "analytics", "sql", "dagctl", "state-management"]
+keywords = ["sqlmesh", "dbt", "data", "analytics", "sql", "dagctl", "state-management", "orchestration", "data-pipelines", "hosted", "mcp", "semantic-layer"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -50,6 +50,8 @@ dev = [
     "black>=23.0.0",
     "ruff>=0.0.280",
     "mypy>=1.4.0",
+    "build>=1.0.0",
+    "twine>=4.0.0",
 ]
 
 [project.scripts]
@@ -57,9 +59,6 @@ dagctl = "dagctl.cli:main"
 
 [tool.setuptools]
 packages = ["dagctl"]
-
-[tool.setuptools.package-data]
-dagctl = ["resources/*.yaml"]
 
 [tool.black]
 line-length = 100
