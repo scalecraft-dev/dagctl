@@ -48,7 +48,7 @@ sqlmesh plan
 
 ## The dagctl platform
 
-- **Semantic layer for agents:** expose a SQLMesh project's models and definitions as an MCP server. Your analysts point Claude or any MCP client at it and query governed data through dagctl, without warehouse credentials of their own.
+- **Your project becomes a semantic layer:** turn a SQLMesh project into an MCP server and it plugs straight into the chat tools your team already uses. Claude or any MCP client asks questions in plain language, and the answers come from the project's own models and definitions through dagctl, with no warehouse credentials handed out. An admin turns it on per project in MCP config. Postgres and Snowflake today, BigQuery coming. Access is by request during the rollout: ask from the MCP config page or email <support@scalecraft.dev>. [Read the docs](https://docs.dagctl.io/features/ask-your-data/).
 - **Automatic fixes:** when a run fails, dagctl diagnoses it and opens a pull request with a proposed fix.
 - **Change control:** plan review and approval on the environments you protect. Approval on a protected environment is limited to the named users, API tokens, or roles you list.
 - **Scheduling and state:** hosted SQLMesh state, scheduled runs, run history, and logs.

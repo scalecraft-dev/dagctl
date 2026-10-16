@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dagctl"
-version = "0.4.0"
+version = "0.4.1"
 description = "CLI for dagctl, the hosted platform for running SQLMesh and dbt in production, with role-based access, approvals, Slack alerts, and a semantic layer over MCP. Connects local sqlmesh plan and run to your project's managed state."
 readme = "README.md"
 requires-python = ">=3.9"
